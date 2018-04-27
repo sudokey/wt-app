@@ -1,3 +1,4 @@
+import moment from 'moment';
 import React from 'react';
 import { View, ListView, ActivityIndicator } from 'react-native';
 import { getPosts } from '../../services/feed';
@@ -44,8 +45,15 @@ export default class Feed extends React.Component {
       return;
     }
 
-    this.setState({
-      loadingMore: true,
+    this.setState((prevState) => {
+      const posts = prevState.posts.concat({
+        isLoader: true,
+      });
+
+      return {
+        loadingMore: true,
+        dataSource: prevState.dataSource.cloneWithRows(posts),
+      };
     }, () => {
       getPosts({
         boundary: this.state.boundary,
@@ -68,20 +76,36 @@ export default class Feed extends React.Component {
   }
 
   render() {
-    return this.state.loading ? (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
-      </View>
-    ) : (
-      <ListView
-        onEndReached={() => this.loadMore()}
-        dataSource={this.state.dataSource}
-        renderRow={data => (
-          <Post
-            title={data.obj.title}
+    return (
+      <View style={{ flex: 1 }}>
+        {this.state.loading ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#1a4262" />
+          </View>
+        ) : (
+          <ListView
+            onEndReached={() => this.loadMore()}
+            dataSource={this.state.dataSource}
+            renderRow={data => (
+              data.isLoader ? (
+                <View style={{ paddingTop: 10, paddingBottom: 10 }}>
+                  <ActivityIndicator size="large" color="#1a4262" />
+                </View>
+              ) : (
+                <Post
+                  title={data.obj.title}
+                  authorImage={`https:${data.obj.author.image}`}
+                  authorName={data.obj.author.displayName}
+                  created={moment(data.obj.date.created).fromNow()}
+                  shortContent={`<div>${data.obj.shortContent.trim()}</div>`}
+                  likes={data.obj.stats.likes.positive - data.obj.stats.likes.negative}
+                  commentsCount={data.obj.commentsCount}
+                />
+              )
+            )}
           />
         )}
-      />
+      </View>
     );
   }
 }
