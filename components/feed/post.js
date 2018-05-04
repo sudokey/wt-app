@@ -1,7 +1,8 @@
 import React from 'react';
 import HTMLView from 'react-native-htmlview';
-import { View, Text, Image, StyleSheet, TouchableHighlight } from 'react-native';
+import { TouchableHighlight, Modal, View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from '../icon';
+import ListItem from '../list/item';
 
 const styles = StyleSheet.create({
   container: {
@@ -83,12 +84,49 @@ export default class Post extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {};
+    this.state = {
+      menuIsVisible: false,
+    };
+  }
+
+  toggleMenu() {
+    this.setState(prevState => ({
+      menuIsVisible: !prevState.menuIsVisible,
+    }));
   }
 
   render() {
     return (
       <View>
+        <Modal
+          transparent
+          animationType="fade"
+          visible={this.state.menuIsVisible}
+          onRequestClose={() => this.toggleMenu()}
+        >
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <TouchableHighlight
+              underlayColor="rgba(0,0,0,0)"
+              onPress={() => this.toggleMenu()}
+              style={{ flex: 2 }}
+            >
+              <View style={{ flex: 2 }} onPress={() => this.toggleMenu()} />
+            </TouchableHighlight>
+            <ListItem
+              title={<Text style={{ color: '#1a4262', fontSize: 16 }}>Get all posts and comments Retirely</Text>}
+              icon={<Icon name="rss" height="20" width="20" fill="#1a4262" />}
+            />
+            <ListItem
+              title={<Text style={{ color: '#1a4262', fontSize: 16 }}>Get all posts from the group The things you own end up owning you</Text>}
+              icon={<Icon name="rss" height="20" width="20" fill="#1a4262" />}
+            />
+            <ListItem
+              title={<Text style={{ color: '#1a4262', fontSize: 16 }}>Copy the link to the post</Text>}
+              icon={<Icon name="share" height="20" width="20" fill="#1a4262" />}
+            />
+          </View>
+        </Modal>
+
         <View style={styles.container}>
           <View style={styles.inner}>
             <View style={styles.header}>
@@ -103,22 +141,25 @@ export default class Post extends React.Component {
                 <Text style={styles.created} numberOfLines={1}>{this.props.created}</Text>
               </View>
               <View style={styles.menuToggler}>
-                <TouchableHighlight>
+                <TouchableOpacity onPress={() => this.toggleMenu()}>
                   <Icon name="toggler" height="24" width="24" fill="#999" />
-                </TouchableHighlight>
+                </TouchableOpacity>
               </View>
             </View>
+
             {this.props.title ? (
               <View style={styles.titleContainer}>
                 <Text style={styles.title}>{this.props.title}</Text>
               </View>
             ) : null}
+
             <View style={styles.content}>
               <HTMLView
                 value={this.props.shortContent}
                 stylesheet={htmlStyles}
               />
             </View>
+
             <View style={styles.footer}>
               <View style={styles.inline}>
                 <View>
